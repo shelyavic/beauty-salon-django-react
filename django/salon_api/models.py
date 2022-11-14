@@ -5,7 +5,7 @@ from django.conf import settings
 
 class Service(models.Model):
     name = models.CharField(_("Service name"), max_length=255)
-    duration = models.DurationField(_('Duration in seconds'))
+    duration = models.DurationField(_('Duration (hh:mm:ss)'))
     
     def __str__(self):
         return self.name
