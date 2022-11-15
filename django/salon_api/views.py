@@ -4,9 +4,12 @@ from django.conf import settings
 from django.utils.translation import gettext as _
 
 from rest_framework.viewsets import ModelViewSet
-from rest_framework.exceptions import ValidationError
+from rest_framework.generics import RetrieveAPIView
+
 from rest_framework import permissions
 from rest_framework.permissions import AllowAny, DjangoModelPermissionsOrAnonReadOnly
+from rest_framework.exceptions import ValidationError
+from rest_framework.response import Response
 
 from salon_api.models import Visit, Service
 from salon_api.serializers import (
@@ -27,8 +30,12 @@ class IsMaster(permissions.BasePermission):
         return has_group(request.user, settings.MASTER_GROUP_NAME)
 
 
+class IsAccountOwner(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return view.kwargs["pk"] == request.user.id
+
+
 class VisitViewSet(ModelViewSet):
-    
     def get_permissions(self):
         if self.action == "list":
             permission_classes = [
@@ -82,6 +89,18 @@ class VisitViewSet(ModelViewSet):
     def perform_update(self, serializer):
         self.check_time_interception(serializer, object2exclude=self.get_object())
         serializer.save()
+
+
+class RetriveUserVisits(RetrieveAPIView):
+    serializer_class = ClientVisitSerializer
+    queryset = Visit.objects.all()
+    permission_classes = [IsAccountOwner]
+
+    def retrieve(self, request, *args, **kwargs):
+        user_id = kwargs["pk"]
+        queryset = Visit.objects.filter(client_id=user_id)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
 
 class ServiceViewSet(ModelViewSet):
