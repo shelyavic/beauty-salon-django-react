@@ -31,7 +31,7 @@ class IsMaster(permissions.BasePermission):
 
 
 class IsAccountOwner(permissions.BasePermission):
-    def has_permission(self, request, view):
+    def has_object_permission(self, request, view, obj):
         return view.kwargs["pk"] == request.user.id
 
 
@@ -94,12 +94,14 @@ class VisitViewSet(ModelViewSet):
 class RetriveUserVisits(RetrieveAPIView):
     serializer_class = ClientVisitSerializer
     queryset = Visit.objects.all()
-    permission_classes = [IsAccountOwner]
+    permission_classes = [IsAccountOwner|IsMaster]
 
     def retrieve(self, request, *args, **kwargs):
         user_id = kwargs["pk"]
         queryset = Visit.objects.filter(client_id=user_id)
+        self.check_object_permissions(request, [])
         serializer = self.get_serializer(queryset, many=True)
+
         return Response(serializer.data)
 
 
