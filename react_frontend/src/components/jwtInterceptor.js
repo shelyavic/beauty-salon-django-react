@@ -4,7 +4,7 @@ const jwtInterceptor = axios.create({});
 
 jwtInterceptor.interceptors.request.use((config) => {
   let tokensData = JSON.parse(localStorage.getItem("tokens"));
-  config.headers["Authorization"] = `bearer ${tokensData.access}`;
+  config.headers["Authorization"] = `Bearer ${tokensData.access}`;
   return config;
 });
 
@@ -25,10 +25,10 @@ jwtInterceptor.interceptors.response.use(
         "http://127.0.0.1:8000/token/refresh/",
         payload
       );
-      localStorage.setItem("tokens", JSON.stringify(apiResponse.data));
+      localStorage.setItem("tokens", JSON.stringify({refresh: authData.refresh, ...apiResponse.data}));
       error.config.headers[
         "Authorization"
-      ] = `bearer ${apiResponse.data.access}`;
+      ] = `Bearer ${apiResponse.data.access}`;
       return axios(error.config);
     } else {
       return Promise.reject(error);
