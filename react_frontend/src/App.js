@@ -1,24 +1,34 @@
-import logo from './logo.svg';
 import './App.css';
+import React from 'react';
+import Container from '@mui/material/Container';
+
+import { Route, Routes } from "react-router-dom";
+
+import Header from './components/Header'
+import VisitList from './components/VisitList';
+import Login from './components/Login';
+import { AuthContextProvider } from './components/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
+import UserVisits from './components/UserVisits';
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <React.Fragment>
+      <AuthContextProvider>
+        <Header />
+        <Container sx={{ paddingTop: '16px' }}>
+          <Routes>
+            <Route path="/" element={<VisitList />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/myvisits" element={
+              <ProtectedRoute>
+                <UserVisits/>
+              </ProtectedRoute>
+            }/>
+          </Routes>
+        </Container>
+      </AuthContextProvider>
+    </React.Fragment>
   );
 }
 
