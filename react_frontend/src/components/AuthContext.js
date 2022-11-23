@@ -26,9 +26,13 @@ export const AuthContextProvider = ({ children }) => {
     console.log(jwt_decode(apiResponse.data.access));
     navigate("/");
   };
-  
+  const logout = async () => {
+    localStorage.removeItem("tokens");
+    setUser(null);
+    navigate("/");
+  };
   return (
-    <AuthContext.Provider value={{ user, login }}>
+    <AuthContext.Provider value={{ user, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

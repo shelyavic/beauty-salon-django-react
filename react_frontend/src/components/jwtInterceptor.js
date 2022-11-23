@@ -25,10 +25,8 @@ jwtInterceptor.interceptors.response.use(
         "http://127.0.0.1:8000/token/refresh/",
         payload
       );
-      localStorage.setItem("tokens", JSON.stringify({refresh: authData.refresh, ...apiResponse.data}));
-      error.config.headers[
-        "Authorization"
-      ] = `Bearer ${apiResponse.data.access}`;
+      localStorage.setItem("tokens", JSON.stringify({ refresh: authData.refresh, ...apiResponse.data }));
+      error.config.headers["Authorization"] = `Bearer ${apiResponse.data.access}`;
       return axios(error.config);
     } else {
       return Promise.reject(error);
