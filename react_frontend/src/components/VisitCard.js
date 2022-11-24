@@ -36,11 +36,6 @@ export default function VisitCard(props) {
           service_name: service.name,
           duration: service.duration,
         });
-        console.log({
-          ...visit,
-          service_name: service.name,
-          duration: service.duration,
-        });
       });
   }, []);
   return (

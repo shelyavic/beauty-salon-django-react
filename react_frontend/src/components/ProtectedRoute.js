@@ -5,7 +5,6 @@ import AuthContext from "./AuthContext";
  
 const ProtectedRoute = ({ children, accessBy }) => {
   const { user } = useContext(AuthContext);
-  console.log(user);
   
   if (user){
     return children;
