@@ -1,13 +1,17 @@
 from datetime import datetime
 
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.utils.translation import gettext as _
 
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.generics import RetrieveAPIView
-
-from rest_framework import permissions
-from rest_framework.permissions import AllowAny, DjangoModelPermissionsOrAnonReadOnly
+from rest_framework.views import APIView
+from rest_framework.permissions import (
+    AllowAny,
+    IsAuthenticated,
+    DjangoModelPermissionsOrAnonReadOnly,
+)
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
@@ -16,23 +20,10 @@ from salon_api.serializers import (
     ClientVisitSerializer,
     MasterVisitSerializer,
     ServiceSerializer,
+    UserInfoSerializer,
 )
+from salon_api.permissions import IsOwner, IsMaster, IsAccountOwner
 from salon_api.utils import has_group
-
-
-class IsOwner(permissions.BasePermission):
-    def has_object_permission(self, request, view, obj):
-        return obj.client == request.user
-
-
-class IsMaster(permissions.BasePermission):
-    def has_object_permission(self, request, view, obj):
-        return has_group(request.user, settings.MASTER_GROUP_NAME)
-
-
-class IsAccountOwner(permissions.BasePermission):
-    def has_object_permission(self, request, view, obj):
-        return view.kwargs["pk"] == request.user.id
 
 
 class VisitViewSet(ModelViewSet):
@@ -94,14 +85,13 @@ class VisitViewSet(ModelViewSet):
 class RetriveUserVisits(RetrieveAPIView):
     serializer_class = ClientVisitSerializer
     queryset = Visit.objects.all()
-    permission_classes = [IsAccountOwner|IsMaster]
+    permission_classes = [IsAccountOwner | IsMaster]
 
     def retrieve(self, request, *args, **kwargs):
         user_id = kwargs["pk"]
         queryset = Visit.objects.filter(client_id=user_id)
         self.check_object_permissions(request, [])
         serializer = self.get_serializer(queryset, many=True)
-
         return Response(serializer.data)
 
 
@@ -109,3 +99,12 @@ class ServiceViewSet(ModelViewSet):
     serializer_class = ServiceSerializer
     queryset = Service.objects.all()
     permission_classes = [DjangoModelPermissionsOrAnonReadOnly]
+
+
+class CurrentUser(APIView):
+    serializer_class = UserInfoSerializer
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        user = get_user_model().objects.get(pk=request.user.id)
+        serializer = self.serializer_class(request.user)
+        return Response(serializer.data)
